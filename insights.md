@@ -24,3 +24,13 @@ Integration Server is the product component with the highest case volume, accoun
 SLA compliance is a key concern in this dataset. Out of 449 closed cases, only 197 were resolved within SLA, while 252 breached the SLA target. This results in an overall SLA compliance rate of 43.88%, meaning that 56.12% of closed cases were resolved outside the expected target.
 
 Average resolution time increases as priority decreases. P1 cases have an average resolution time of 4.65 days, P2 cases average 7.79 days, P3 cases average 10.54 days, and P4 cases average 13.12 days. However, P1 and P2 cases appear to be taking longer than their expected SLA targets, which may indicate an opportunity to improve critical case handling.
+
+## Trend Analysis Findings
+
+Monthly case volume remained relatively stable throughout 2025. The highest number of cases was created in October 2025, with 56 cases, followed by August 2025 with 50 cases. July 2025 had the lowest case volume, with 33 cases.
+
+SLA compliance varied significantly by month. January and February 2025 had the strongest SLA performance, with compliance rates of 59.09% and 58.82%, respectively. However, November 2025 showed the lowest meaningful SLA compliance rate, with only 20.59% of closed cases resolved within SLA. January 2026 also showed a low SLA compliance rate of 18.18%, but this was based on only 11 closed cases, making it less representative.
+
+Average resolution time also varied by product component. JDBC Adapter had the highest average resolution time at 10.56 days, followed by My webMethods Server at 10.49 days and Terracotta at 10.32 days. Universal Messaging had the lowest average resolution time at 8.72 days.
+
+Integration Server remains a key area of focus because it has the highest overall case volume and also shows a high SLA breach rate. This suggests that improvements in Integration Server case handling could have a meaningful impact on overall support performance.
