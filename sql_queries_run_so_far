@@ -1,0 +1,304 @@
+# SQL Queries Run So Far
+
+Project: **Technical Support Case Analytics**  
+Database: **technical_support_analytics**  
+Table: **support_cases**
+
+This document contains the SQL queries executed during the initial analysis phase of the project, along with the business purpose of each query and the results obtained so far.
+
+---
+
+## 1. Total Number of Cases
+
+### Purpose
+
+Validate that the CSV file was imported correctly and confirm the total number of records in the `support_cases` table.
+
+### Query
+
+```sql
+SELECT COUNT(*) AS total_cases
+FROM support_cases;
+```
+
+### Result
+
+| total_cases |
+|---:|
+| 500 |
+
+---
+
+## 2. Cases by Status
+
+### Purpose
+
+Understand the current distribution of support cases by status.
+
+### Query
+
+```sql
+SELECT
+    case_status,
+    COUNT(*) AS total_cases
+FROM support_cases
+GROUP BY case_status
+ORDER BY total_cases DESC;
+```
+
+### Result
+
+| case_status | total_cases |
+|---|---:|
+| Closed | 449 |
+| Open | 37 |
+| Pending Customer | 14 |
+
+---
+
+## 3. Cases by Priority
+
+### Purpose
+
+Identify how cases are distributed across priority levels.
+
+### Query
+
+```sql
+SELECT
+    case_priority,
+    COUNT(*) AS total_cases
+FROM support_cases
+GROUP BY case_priority
+ORDER BY case_priority;
+```
+
+### Result
+
+| case_priority | total_cases |
+|---|---:|
+| P1 | 47 |
+| P2 | 135 |
+| P3 | 213 |
+| P4 | 105 |
+
+---
+
+## 4. Cases by Product Component
+
+### Purpose
+
+Identify which product components generate the highest support case volume.
+
+### Query
+
+```sql
+SELECT
+    product_component,
+    COUNT(*) AS total_cases
+FROM support_cases
+GROUP BY product_component
+ORDER BY total_cases DESC;
+```
+
+### Result
+
+| product_component | total_cases |
+|---|---:|
+| Integration Server | 170 |
+| Universal Messaging | 84 |
+| Trading Networks | 62 |
+| JDBC Adapter | 57 |
+| My webMethods Server | 53 |
+| API Gateway | 52 |
+| Terracotta | 22 |
+
+---
+
+## 5. Overall SLA Compliance for Closed Cases
+
+### Purpose
+
+Calculate the overall SLA compliance rate for closed support cases.
+
+### Query
+
+```sql
+SELECT
+    COUNT(*) AS closed_cases,
+    SUM(CASE WHEN sla_met = 'Yes' THEN 1 ELSE 0 END) AS cases_within_sla,
+    SUM(CASE WHEN sla_met = 'No' THEN 1 ELSE 0 END) AS cases_outside_sla,
+    ROUND(
+        100.0 * SUM(CASE WHEN sla_met = 'Yes' THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS sla_compliance_rate
+FROM support_cases
+WHERE case_status = 'Closed';
+```
+
+### Result
+
+| closed_cases | cases_within_sla | cases_outside_sla | sla_compliance_rate |
+|---:|---:|---:|---:|
+| 449 | 197 | 252 | 43.88 |
+
+---
+
+## 6. Average Resolution Time by Priority
+
+### Purpose
+
+Compare average resolution time across case priority levels.
+
+### Query
+
+```sql
+SELECT
+    case_priority,
+    ROUND(AVG(actual_resolution_days), 2) AS avg_resolution_days
+FROM support_cases
+WHERE actual_resolution_days IS NOT NULL
+GROUP BY case_priority
+ORDER BY case_priority;
+```
+
+### Result
+
+| case_priority | avg_resolution_days |
+|---|---:|
+| P1 | 4.65 |
+| P2 | 7.79 |
+| P3 | 10.54 |
+| P4 | 13.12 |
+
+---
+
+## 7. SLA Compliance by Priority
+
+### Purpose
+
+Analyze SLA performance by priority level to identify whether higher-priority cases are being resolved within target.
+
+### Query
+
+```sql
+SELECT
+    case_priority,
+    COUNT(*) AS closed_cases,
+    SUM(CASE WHEN sla_met = 'Yes' THEN 1 ELSE 0 END) AS cases_within_sla,
+    SUM(CASE WHEN sla_met = 'No' THEN 1 ELSE 0 END) AS cases_outside_sla,
+    ROUND(
+        100.0 * SUM(CASE WHEN sla_met = 'Yes' THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS sla_compliance_rate
+FROM support_cases
+WHERE case_status = 'Closed'
+GROUP BY case_priority
+ORDER BY case_priority;
+```
+
+### Result
+
+| case_priority | closed_cases | cases_within_sla | cases_outside_sla | sla_compliance_rate |
+|---|---:|---:|---:|---:|
+| P1 | 46 | 6 | 40 | 13.04 |
+| P2 | 119 | 39 | 80 | 32.77 |
+| P3 | 191 | 94 | 97 | 49.21 |
+| P4 | 93 | 58 | 35 | 62.37 |
+
+---
+
+## 8. Components with Highest SLA Breach Rate
+
+### Purpose
+
+Identify which product components have the highest percentage of closed cases resolved outside SLA.
+
+### Query
+
+```sql
+SELECT
+    product_component,
+    COUNT(*) AS closed_cases,
+    SUM(CASE WHEN sla_met = 'No' THEN 1 ELSE 0 END) AS breached_cases,
+    ROUND(
+        100.0 * SUM(CASE WHEN sla_met = 'No' THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS breach_rate
+FROM support_cases
+WHERE case_status = 'Closed'
+GROUP BY product_component
+ORDER BY breach_rate DESC;
+```
+
+### Result
+
+| product_component | closed_cases | breached_cases | breach_rate |
+|---|---:|---:|---:|
+| API Gateway | 47 | 29 | 61.70 |
+| Integration Server | 155 | 93 | 60.00 |
+| My webMethods Server | 49 | 27 | 55.10 |
+| JDBC Adapter | 50 | 27 | 54.00 |
+| Trading Networks | 53 | 28 | 52.83 |
+| Universal Messaging | 76 | 39 | 51.32 |
+| Terracotta | 19 | 9 | 47.37 |
+
+---
+
+## 9. Most Common Root Cause Categories
+
+### Purpose
+
+Identify the most frequent root cause categories across support cases.
+
+### Query
+
+```sql
+SELECT
+    root_cause_category,
+    COUNT(*) AS total_cases
+FROM support_cases
+WHERE root_cause_category IS NOT NULL
+  AND root_cause_category <> ''
+GROUP BY root_cause_category
+ORDER BY total_cases DESC;
+```
+
+### Result
+
+| root_cause_category | total_cases |
+|---|---:|
+| Configuration Issue | 119 |
+| Connectivity Issue | 84 |
+| User Error | 78 |
+| Product Defect | 58 |
+| Performance Issue | 57 |
+| Database Issue | 50 |
+| Environment Issue | 31 |
+| Documentation Gap | 23 |
+
+---
+
+# Initial Business Observations
+
+- The dataset contains **500 support cases**.
+- Most cases are already closed: **449 closed cases**, representing **89.8%** of the dataset.
+- **P3 cases** represent the largest priority group with **213 cases**.
+- **Integration Server** has the highest case volume with **170 cases**, representing **34%** of all cases.
+- Overall SLA compliance for closed cases is **43.88%**, meaning more than half of closed cases breached the SLA target.
+- SLA compliance is lowest for **P1 cases**, with only **13.04%** resolved within SLA.
+- **API Gateway** has the highest SLA breach rate by component at **61.70%**, followed closely by **Integration Server** at **60.00%**.
+- The most common root cause category is **Configuration Issue**, with **119 cases**.
+
+---
+
+# Suggested Next Queries
+
+The next analysis phase could include:
+
+1. Monthly case volume trend.
+2. Monthly SLA compliance trend.
+3. Average resolution time by product component.
+4. SLA breach rate by region.
+5. Root cause distribution by product component.
+6. Open cases by priority and component.
